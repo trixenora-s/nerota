@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
+import { ArrowRight } from 'lucide-react';
 
 const categories = [
   { name: 'Birthday', slug: 'birthday', color: 'from-pink-500 to-orange-500', icon: '🎂' },
