@@ -142,7 +142,7 @@ model Address {
 
 model Order {
   id                  String    @id @default(cuid())
-  userId              String
+  userId              String    // Email as user identifier
   orderNumber         String    @unique
   items               Json
   totalAmount         Decimal
@@ -158,8 +158,8 @@ model Order {
   createdAt           DateTime  @default(now())
   updatedAt           DateTime  @updatedAt
 
-  // Bidirectional relation
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  // Note: Not referencing User model for now - using email as userId
+  // user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("orders")
 }

@@ -1,0 +1,6 @@
+{
+  "version": 2,
+  "name": "nerota",
+  "rootDirectory": "frontend",
+  "framework": "nextjs"
+}

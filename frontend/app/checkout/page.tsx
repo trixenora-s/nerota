@@ -112,7 +112,7 @@ export default function CheckoutPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          userId: session?.user?.id,
+          userId: session?.user?.email,
           items: cart,
           totalAmount: subtotal,
           discountAmount: 0,
