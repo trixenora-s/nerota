@@ -1,12 +1,15 @@
-'use client';
-
 import Link from 'next/link';
-import { useSearchParams } from 'next/navigation';
 import { searchCategories } from '@/lib/content';
 
-export default function SearchPage() {
-  const searchParams = useSearchParams();
-  const query = searchParams.get('q') || '';
+interface SearchPageProps {
+  searchParams?: {
+    q?: string | string[];
+  };
+}
+
+export default function SearchPage({ searchParams }: SearchPageProps) {
+  const queryValue = searchParams?.q;
+  const query = Array.isArray(queryValue) ? queryValue[0] : queryValue || '';
   const results = query ? searchCategories(query) : [];
 
   return (

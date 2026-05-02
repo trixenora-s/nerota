@@ -17,14 +17,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <div className="min-h-screen flex flex-col">
-          <Header />
-          <main className="flex-1 pt-20 pb-32">
-            <SessionProvider>{children}</SessionProvider>
-          </main>
-          <Footer />
-        </div>
-        <Toaster />
+        <SessionProvider>
+          <div className="min-h-screen flex flex-col">
+            <Header />
+            <main className="flex-1 pt-20 pb-32">{children}</main>
+            <Footer />
+          </div>
+          <Toaster />
+        </SessionProvider>
       </body>
     </html>
   );
