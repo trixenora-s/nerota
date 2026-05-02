@@ -38,10 +38,8 @@ export default function ProductCard({ product }: ProductCardProps) {
       <div className="mt-5 flex items-center justify-between gap-4">
         <div>
           <p className="text-2xl font-semibold text-slate-900">₹{product.price.toLocaleString()}</p>
-          {product.rating ? (
+          {typeof product.rating === 'number' && (
             <p className="mt-1 text-sm text-slate-500">Rating: {product.rating.toFixed(1)} / 5</p>
-          ) : (
-            <p className="mt-1 text-sm text-slate-500">No ratings yet</p>
           )}
         </div>
         <button

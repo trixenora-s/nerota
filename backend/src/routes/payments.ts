@@ -1,62 +1,75 @@
 import express from 'express';
+import Razorpay from 'razorpay';
+import { authenticateToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
-// Mock payment gateway - simulates payment processing
-router.post('/process', async (req: express.Request, res: express.Response) => {
+const razorpayClient = process.env.RAZORPAY_KEY_ID && process.env.RAZORPAY_KEY_SECRET
+  ? new Razorpay({
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET
+    })
+  : null;
+
+router.post('/process', authenticateToken, async (req: express.Request, res: express.Response) => {
+  if (!razorpayClient) {
+    return res.status(501).json({
+      success: false,
+      error: 'Payment gateway not configured',
+      message: 'Razorpay credentials are required to process payments.'
+    });
+  }
   try {
-    const {
-      orderId,
-      amount,
-      paymentMethod,
-      cardDetails // In real app, this would be tokenized
-    } = req.body;
+    const { orderId, amount, currency = 'INR', receipt } = req.body;
 
-    // Simulate payment processing delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    // Mock payment success (90% success rate)
-    const isSuccess = Math.random() > 0.1;
-
-    if (isSuccess) {
-      // In real app, update order payment status via database
-      res.json({
-        success: true,
-        transactionId: `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 8).toUpperCase()}`,
-        orderId,
-        amount,
-        status: 'completed',
-        message: 'Payment processed successfully'
-      });
-    } else {
-      res.status(400).json({
+    if (!orderId || !amount) {
+      return res.status(400).json({
         success: false,
-        error: 'Payment failed',
-        message: 'Your payment could not be processed. Please try again.'
+        error: 'Missing payment details',
+        message: 'orderId and amount are required.'
       });
     }
+
+    const razorpayOrder = await razorpayClient.orders.create({
+      amount: Math.round(Number(amount) * 100),
+      currency,
+      receipt: receipt || `receipt_${orderId}`,
+      payment_capture: true
+    });
+
+    res.json({
+      success: true,
+      order: razorpayOrder,
+      message: 'Payment order created successfully'
+    });
   } catch (error) {
     console.error('Payment processing error:', error);
     res.status(500).json({
       success: false,
-      error: 'Payment service unavailable',
-      message: 'Please try again later.'
+      error: 'Payment creation failed',
+      message: 'Unable to create a payment order at this time.'
     });
   }
 });
 
 // Get payment status
-router.get('/status/:transactionId', async (req: express.Request, res: express.Response) => {
+router.get('/status/:transactionId', authenticateToken, async (req: express.Request, res: express.Response) => {
+  if (!razorpayClient) {
+    return res.status(501).json({ error: 'Payment gateway not configured' });
+  }
+
   try {
     const { transactionId } = req.params;
 
-    // Mock status check - in real app, query payment gateway
-    const status = Math.random() > 0.05 ? 'completed' : 'pending';
+    const payment = await razorpayClient.payments.fetch(transactionId);
 
     res.json({
       transactionId,
-      status,
-      timestamp: new Date().toISOString()
+      status: payment.status,
+      amount: payment.amount,
+      currency: payment.currency,
+      createdAt: new Date(payment.created_at * 1000).toISOString(),
+      gatewayResponse: payment
     });
   } catch (error) {
     console.error('Payment status check error:', error);

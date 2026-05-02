@@ -1,14 +1,15 @@
 import express from 'express';
 import { PrismaClient } from '@prisma/client';
+import { authenticateToken } from '../middleware/auth';
 
 const router = express.Router();
 const prisma = new PrismaClient();
 
 // Create order
-router.post('/', async (req: express.Request, res: express.Response) => {
+router.post('/', authenticateToken, async (req: express.Request, res: express.Response) => {
   try {
+    const userId = (req as any).user?.id;
     const {
-      userId,
       items,
       totalAmount,
       discountAmount = 0,
@@ -20,7 +21,10 @@ router.post('/', async (req: express.Request, res: express.Response) => {
       specialInstructions
     } = req.body;
 
-    // Generate order number
+    if (!userId) {
+      return res.status(401).json({ error: 'Unauthorized' });
+    }
+
     const orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 5).toUpperCase()}`;
 
     const order = await prisma.order.create({
@@ -50,11 +54,16 @@ router.post('/', async (req: express.Request, res: express.Response) => {
 });
 
 // Get user's orders
-router.get('/user/:userId', async (req: express.Request, res: express.Response) => {
+router.get('/user/:userId', authenticateToken, async (req: express.Request, res: express.Response) => {
   try {
     const { userId } = req.params;
     const userIdStr = Array.isArray(userId) ? userId[0] : userId;
+    const tokenUserId = (req as any).user?.id;
     const { page = '1', limit = '10' } = req.query;
+
+    if (!tokenUserId || tokenUserId !== userIdStr) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
 
     const skip = (Number(page) - 1) * Number(limit);
 
@@ -84,16 +93,22 @@ router.get('/user/:userId', async (req: express.Request, res: express.Response) 
 });
 
 // Get order by ID
-router.get('/:id', async (req: express.Request, res: express.Response) => {
+router.get('/:id', authenticateToken, async (req: express.Request, res: express.Response) => {
   try {
     const { id } = req.params;
     const orderId = Array.isArray(id) ? id[0] : id;
+    const tokenUserId = (req as any).user?.id;
+
     const order = await prisma.order.findUnique({
       where: { id: orderId }
     });
 
     if (!order) {
       return res.status(404).json({ error: 'Order not found' });
+    }
+
+    if (!tokenUserId || order.userId !== tokenUserId) {
+      return res.status(403).json({ error: 'Forbidden' });
     }
 
     res.json(order);

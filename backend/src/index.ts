@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 
 // Import routes WITHOUT await
 import productsRouter from './routes/products';
+import categoriesRouter from './routes/categories';
 import ordersRouter from './routes/orders';
 import paymentsRouter from './routes/payments';
 import authRouter from './routes/auth';
@@ -33,6 +34,7 @@ app.use('/api/', limiter);
 
 // Routes
 app.use('/api/products', productsRouter);
+app.use('/api/categories', categoriesRouter);
 app.use('/api/orders', ordersRouter);
 app.use('/api/payments', paymentsRouter);
 app.use('/api/auth', authRouter);

@@ -147,7 +147,6 @@ export const getProductsForCategory = (slug: string): Product[] => {
     id: `${slug}-${index}`,
     title: `${baseTitle} ${template.title}`,
     price: 12000 + index * 7000,
-    rating: [4.8, 4.6, 4.9, undefined][index],
     badge: template.badge,
     duration: template.duration,
     description: template.description,
