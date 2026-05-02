@@ -9,6 +9,7 @@ import dotenv from 'dotenv';
 import productsRouter from './routes/products';
 import ordersRouter from './routes/orders';
 import paymentsRouter from './routes/payments';
+import authRouter from './routes/auth';
 
 dotenv.config();
 
@@ -34,6 +35,7 @@ app.use('/api/', limiter);
 app.use('/api/products', productsRouter);
 app.use('/api/orders', ordersRouter);
 app.use('/api/payments', paymentsRouter);
+app.use('/api/auth', authRouter);
 
 // Health check
 app.get('/api/health', (req, res) => {
