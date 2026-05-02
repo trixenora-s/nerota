@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { persist, StateCreator } from 'zustand/middleware';
+import { create, type StateCreator } from 'zustand';
+import { persist } from 'zustand/middleware';
 
 interface CartItem {
   productId: string;
